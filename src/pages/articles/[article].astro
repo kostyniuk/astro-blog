@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { readFileSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+export async function getStaticPaths() {
+  const htmlDir = fileURLToPath(new URL('../notion-html', import.meta.url));
+  const files = await readdir(htmlDir);
+
+  return files.map((filename) => {
+    const slug = path.basename(filename, '.html');
+    const filePath = path.join(htmlDir, filename);
+    const htmlContent = readFileSync(filePath, 'utf-8');
+
+    return {
+      params: { article: slug },
+      props: { htmlContent },
+    };
+  });
+}
+
+const { htmlContent } = Astro.props;
+---
+
+<BaseLayout pageTitle="Notion Article">
+  <main>
+    <article set:html={htmlContent} />
+  </main>
+</BaseLayout>
